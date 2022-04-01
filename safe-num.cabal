@@ -36,6 +36,7 @@ test-suite safe-num-test
     build-depends:
         base
       , QuickCheck
+      , quickcheck-instances
       , tasty
       , tasty-quickcheck
       , safe-num
