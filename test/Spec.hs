@@ -76,21 +76,6 @@ safeNumLaws p = testGroup ("SafeNum laws for " ++ show (typeRep p))
 -- Real+Fractional
 ------------------
 
-newtype Ratio' a = Ratio' (Ratio a)
-  deriving newtype (Eq, Ord, Num, Real, Fractional, SafeFractional)
-
-arbitraryRatio :: (Show a, Integral a) => Gen a -> Gen (Ratio a)
-arbitraryRatio gen = do
-    n <- gen
-    d <- gen `suchThat` (\n -> n /= 0)
-    pure $ n % d
-
-instance (Show a, Integral a, Arbitrary a) => Arbitrary (Ratio' a) where
-  arbitrary = Ratio' <$> (arbitraryRatio arbitrary)
-
-instance Show a => Show (Ratio' a) where
-  show (Ratio' (n :% d)) = show n ++ " :% " ++ show d
-
 prop_toRationalTotal :: forall a . (Show a, Arbitrary a, Real a) => Proxy a -> Property
 prop_toRationalTotal _ = forAll arbitrary $ \(i :: a) -> ioProperty $ do
   i' <- try @SomeException $ evaluate $ toRational i
@@ -106,7 +91,7 @@ realLaws p = testGroup ("Real laws for " ++ show (typeRep p))
   ]
 
 realFractionalLaws :: forall a . (Typeable a, Show a, Arbitrary a, Real a, Fractional a) => Proxy a -> TestTree
-realFractionalLaws p = testGroup ("Real+Frational laws (" ++ show (typeRep p) ++ ")")
+realFractionalLaws p = testGroup ("Real+Frational laws for " ++ show (typeRep p))
   [ testProperty "fromRational/toRational left inverse" $ prop_fromRationalToRationalLeftInverse p
   ]
 
@@ -147,7 +132,7 @@ safeFractionalLaws p = testGroup ("SafeFractional laws for " ++ show (typeRep p)
 --------
 
 integralTests :: TestTree
-integralTests = testGroup "Integral tests"
+integralTests = testGroup "Integral"
   [ integralLaws (Proxy @Integer)
   , integralLaws (Proxy @Natural)
   , integralLaws (Proxy @Int)
@@ -162,7 +147,7 @@ integralTests = testGroup "Integral tests"
   ]
 
 safeNumTests :: TestTree
-safeNumTests = testGroup "SafeNum tests"
+safeNumTests = testGroup "SafeNum"
   [ safeNumLaws (Proxy @Integer)
   , safeNumLaws (Proxy @Natural)
   , safeNumLaws (Proxy @Int)
@@ -178,9 +163,9 @@ safeNumTests = testGroup "SafeNum tests"
   ]
 
 realTests :: TestTree
-realTests = testGroup "Real tests"
-  [ realLaws (Proxy @(Ratio' Integer))
-  , realLaws (Proxy @(Ratio' Int))
+realTests = testGroup "Real"
+  [ realLaws (Proxy @(Ratio Integer))
+  , realLaws (Proxy @(Ratio Int))
   , realLaws (Proxy @Double)
   , realLaws (Proxy @Float)
   , realLaws (Proxy @Integer)
@@ -198,17 +183,17 @@ realTests = testGroup "Real tests"
   ]
 
 realFractionalTests :: TestTree
-realFractionalTests = testGroup "Real+Fractional tests"
-  [ realFractionalLaws (Proxy @(Ratio' Integer))
-  , realFractionalLaws (Proxy @(Ratio' Int))
+realFractionalTests = testGroup "Real+Fractional"
+  [ realFractionalLaws (Proxy @(Ratio Integer))
+  , realFractionalLaws (Proxy @(Ratio Int))
   , realFractionalLaws (Proxy @Double)
   , realFractionalLaws (Proxy @Float)
   ]
 
 safeFractionalTests :: TestTree
-safeFractionalTests = testGroup "SafeFractional tests"
-  [ safeFractionalLaws (Proxy @(Ratio' Integer))
-  , safeFractionalLaws (Proxy @(Ratio' Int))
+safeFractionalTests = testGroup "SafeFractional"
+  [ safeFractionalLaws (Proxy @(Ratio Integer))
+  , safeFractionalLaws (Proxy @(Ratio Int))
   ]
 
 main :: IO ()

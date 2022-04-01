@@ -18,7 +18,7 @@ class Num a => SafeNum a where
 
     'fromIntegerMaybe' should satisfy the following laws:
 
-        * 'fromIntegerMaybe' is always total, i.e. @fromIntegerMaybe x = _|_ ==> x = _|_@
+        * 'fromIntegerMaybe' is total, i.e. @fromIntegerMaybe x = _|_ ==> x = _|_@
         * 'fromIntegerMaybe' agrees with 'fromInteger' on its domain of definition,
           i.e. @fromIntegerMaybe i == Just j ==> fromInteger i = j@
         * If 'a' is an instance of 'Integral', then 'fromIntegerMaybe' is an inverse to 'toInteger' on its domain of definition,
@@ -91,7 +91,7 @@ class Fractional a => SafeFractional a where
 
     'fromRationalMaybe' should satisfy the following laws:
 
-        * 'fromRationalMaybe' is always total, i.e. @fromRationalMaybe x = _|_ ==> x = _|_@
+        * 'fromRationalMaybe' is total, i.e. @fromRationalMaybe x = _|_ ==> x = _|_@
         * 'fromRationalMaybe' agrees with 'fromRational' on its domain of definition,
           i.e. @fromRationalMaybe i == Just j ==> fromRational i = j@
         * If 'a' is an instance of 'Real', then 'fromRationalMaybe' is an inverse to 'toRational' on its domain of definition,
@@ -106,8 +106,11 @@ realToFracMaybe = fromRationalMaybe . toRational
 -- and then using '\/'. Returns 'Nothing' for a 0 denominator. Not universally safe as it relies on '\/' being total
 -- given non-zero denominators.
 fromRationalViaInteger :: forall a . (Fractional a, SafeNum a) => Rational -> Maybe a
-fromRationalViaInteger (n :% 0) = Nothing
-fromRationalViaInteger (n :% d) = (/) <$> fromIntegerMaybe n <*> fromIntegerMaybe d
+fromRationalViaInteger r =
+  let n = numerator r
+      d = denominator r
+  in if d == 0 then Nothing
+  else (/) <$> fromIntegerMaybe n <*> fromIntegerMaybe d
 
 -- This instance is only sensible if 'Ratio a' is generally well-behaved,
 -- which it often isn't...
